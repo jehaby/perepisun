@@ -1,0 +1,5 @@
+{:webserver   {:port #long #or [#env HTTP_PORT 8859]}
+ :bot-api-key #env BOT_API_KEY
+ :log-level   #keyword #or [#env LOG_LEVEL "info"]
+ :redis       {:password #or [#env REDIS_PASSWORD "dev"]}
+ }

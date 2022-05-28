@@ -13,3 +13,9 @@
 /.socket-repl-port
 .hgignore
 .hg/
+.envrc
+.lsp/*
+.clj-kondo/*
+!.clj-kondo/config.edn
+.dir-locals.el
+
