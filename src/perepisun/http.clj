@@ -1,24 +1,23 @@
 (ns perepisun.http
   (:require
-   [ring.middleware.params :as params]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
+   [clojure.string :as str]
+   [integrant.core :as ig]
    [muuntaja.core :as m]
-   [reitit.ring.coercion :as coercion]
    [reitit.ring :as ring]
-   [taoensso.timbre.tools.logging]
+   [reitit.ring.coercion :as coercion]
+   [reitit.ring.middleware.muuntaja :as muuntaja]
    [ring.adapter.jetty9 :refer [run-jetty]]
+   [ring.middleware.params :as params]
    [taoensso.timbre :as log]
-   [telegrambot-lib.core :as tbot]
+   [taoensso.timbre.tools.logging]
    [perepisun.config :refer [config]]
    [perepisun.handlers :as h]
-   [clojure.string :as str])
-  (:gen-class))
+   ))
 
-
-(defn make-handler [system]
+(defn make-handler [{rewrite-hnd :handler/rewrite :as _system}]
   (fn [{event :body-params :as req}]
-    ;; (def req req)
-    ;; (def event event)
+    (def req req)
+    (def event event)
     (log/debug "got event " event)
     (try
       (when-let [text (-> event :message :text)]
@@ -32,7 +31,7 @@
           "/set"    (h/set event) ;; TODO: change to set
           "/delete" (h/todo event)
           ;; nil       {:status 200}  #_ (h/delete event)
-          (h/rewrite-handler event))) ;; TODO: check this case, is it the source of errors?
+          (rewrite-hnd event))) ;; TODO: check this case, is it the source of errors?
       (catch Exception e
         (log/error {:msg "excpetion in handler" :err e :event event})
         {:status 200 :body (str "got error" e)}
@@ -67,6 +66,12 @@
         ))
     (log/info "server running in port " port)
     server))
+
+(defmethod ig/init-key :webserver [_ opts]
+  (start-server opts))
+
+(defmethod ig/halt-key! :webserver [_ server]
+  (.stop server))
 
 (defn -main [& _args]
   (taoensso.timbre.tools.logging/use-timbre)

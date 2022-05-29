@@ -1,10 +1,11 @@
 (ns user
   (:require
-   [perepisun.http :refer [start-server]]))
+   [integrant.core :as ig]
+   [perepisun.system :refer [system]]))
 
-(defonce srv (atom nil))
+(defonce dev-sys (atom nil))
 (comment
-  (reset! srv (start-server nil))
-  (.start @srv)
-  (.stop @srv)
+  (reset! dev-sys (ig/init system))
+  (.start @dev-sys)
+  (.stop @dev-sys)
   )

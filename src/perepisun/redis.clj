@@ -13,6 +13,7 @@
 (def server1-conn
   {:pool {}
    :spec {:uri -uri}}) ; See `wcar` docstring for opts
+
 (defmacro wcar* [& body] `(car/wcar server1-conn ~@body))
 
 
