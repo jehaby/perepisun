@@ -1,6 +1,6 @@
 (ns perepisun.handlers-test
   (:require [clojure.test :refer :all]
-            [perepisun.handlers :as sut]))
+            [perepisun.handlers.rewrite :as sut]))
 
 (deftest respond-test
   (is (= "вტф" (sut/respond "втф" {"т" "ტ"})))

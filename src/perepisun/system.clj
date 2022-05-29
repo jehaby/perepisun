@@ -4,8 +4,7 @@
    [telegrambot-lib.core :as tbot]
    [perepisun.config :refer [config]]
    [perepisun.http]
-   [perepisun.handlers.rewrite]
-   [perepisun.tbot]))
+   [perepisun.handlers.rewrite]))
 
 (defmethod ig/init-key :app/tbot [_ {api-key :api-key}]
   (tbot/create api-key))

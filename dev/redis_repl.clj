@@ -1,7 +1,7 @@
 (ns redis-repl
   (:require
    [taoensso.carmine :as car]
-   [jehaby.redis :refer [wcar*]]))
+   [perepisun.redis :refer [wcar*]]))
 
 (comment
 

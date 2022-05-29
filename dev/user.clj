@@ -1,11 +1,15 @@
 (ns user
   (:require
-   [integrant.core :as ig]
-   [perepisun.system :refer [system]]))
+   [perepisun.system :refer [system]]
+   [integrant.repl :refer [clear go halt prep init reset reset-all]]
+   [integrant.repl.state :as igrs]
+   ))
 
-(defonce dev-sys (atom nil))
+(integrant.repl/set-prep! (constantly system))
+
 (comment
-  (reset! dev-sys (ig/init system))
-  (.start @dev-sys)
-  (.stop @dev-sys)
-  )
+  igrs/config
+  igrs/system
+
+  (go) ; prep & init
+  (reset))
