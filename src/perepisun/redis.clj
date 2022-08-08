@@ -1,19 +1,24 @@
 (ns perepisun.redis
   (:require
-   [taoensso.carmine :as car :refer (wcar)]
-   #_[jehaby.config :refer [config]]
-   ))
+   [integrant.core :as ig]
+   [taoensso.carmine :as car]))
 
-(def -uri
-  (str "redis://"
-       ;; (-> config :redis :password)
-       "localhost:6379/"
-       ))
+(defmacro wcar* [& body] `(car/wcar nil ~@body)) 
 
-(def server1-conn
-  {:pool {}
-   :spec {:uri -uri}}) ; See `wcar` docstring for opts
+(defprotocol DB
+  (get-mappings [this chat-id])
+  (set-mappings [this chat-id mappings pattern])
+  (stop [this chat-id])
+  (start [this chat-id]))
 
-(defmacro wcar* [& body] `(car/wcar server1-conn ~@body))
-
-
+(defmethod ig/init-key :app/redis [_ {config :config}]
+  (let [conn-opts (:redis config)]
+    (reify DB
+      (get-mappings [_ chat-id]
+        (car/wcar conn-opts (car/get chat-id)))
+      (set-mappings [_ chat-id mappings pattern]
+        (car/wcar
+          conn-opts
+          (car/set conn-opts chat-id {:mappings mappings :pattern pattern})))
+      (stop [_ chat-id])
+      (start [_ chat-id]))))

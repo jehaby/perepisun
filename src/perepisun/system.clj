@@ -2,21 +2,35 @@
   (:require
    [integrant.core :as ig]
    [telegrambot-lib.core :as tbot]
-   [perepisun.config :refer [config]]
+   [perepisun.config]
    [perepisun.http]
+   [perepisun.redis]
+   [perepisun.handlers]
    [perepisun.handlers.rewrite]))
 
-(defmethod ig/init-key :app/tbot [_ {api-key :api-key}]
-  (tbot/create api-key))
+(defmethod ig/init-key :app/tbot [_ {config :config}]
+  (tbot/create (-> config :bot-api-key)))
 
 (def system
-  {:webserver {:port (-> config :webserver :port)
-               :handler/rewrite (ig/ref :handler/rewrite)}
+  {:webserver {:config (ig/ref :app/config)
+               :handler/rewrite (ig/ref :handler/rewrite)
+               :handler/help (ig/ref :handler/help)
+               :handler/show (ig/ref :handler/show)
+               :handler/set (ig/ref :handler/set)}
 
-   ;; :redis {:a :b}
+   :app/config {}
+
+   :app/redis {:config (ig/ref :app/config)}
+
+   :handler/help {:tbot (ig/ref :app/tbot)}
 
    :handler/rewrite {:tbot (ig/ref :app/tbot)
-                     ;; :redis (ig/ref :redis)
-                     }
+                     :db (ig/ref :app/redis)}
 
-   :app/tbot {:api-key (:bot-api-key config)}})
+   :handler/show {:tbot (ig/ref :app/tbot)
+                  :db (ig/ref :app/redis)}
+
+   :handler/set {:tbot (ig/ref :app/tbot)
+                 :db (ig/ref :app/redis)}
+
+   :app/tbot {:config (ig/ref :app/config)}})
