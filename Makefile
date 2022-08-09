@@ -2,6 +2,7 @@
 	build \
 	deploy \
 	upload \
+	test \
 	setup-dev-webhook
 
 build:
@@ -14,6 +15,9 @@ restart:
 	ssh vps1 'systemctl restart rewraktar'
 
 deploy: build upload restart
+
+test:
+	TIMBRE_LEVEL=:warn neil test
 
 setup-dev-webhook:
 	curl --header "Content-Type: application/json" \

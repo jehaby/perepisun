@@ -2,10 +2,10 @@
   (:require
    [clojure.string :as str]
    [integrant.core :as ig]
-   [telegrambot-lib.core :as tbot]
    [taoensso.timbre :as log]
    [taoensso.carmine :as car]
-   [perepisun.redis :refer [wcar*]]))
+   [telegrambot-lib.core :as tbot]
+   [perepisun.redis :refer [wcar*] :as redis]))
 
 (def mybot nil)
 
@@ -14,14 +14,14 @@
 
 Use `/show` for getting current substitutions.")
 
-(defmethod ig/init-key :handler/help [_ {:keys [tbot]}]
+(defmethod ig/init-key :handler/help [_ {:keys [tbot tg-send-message]}]
   (fn help [msg]
     (let [chat-id (-> msg :message :chat :id)]
       (when-not chat-id
         (log/debug "help: empty chat-id " msg))
-      (tbot/send-message tbot chat-id help-msg #_send-msg-opts-))))
+      (tg-send-message tbot chat-id help-msg #_send-msg-opts-))))
 
-(defn todo [{{:keys [chat]} :message :as _event}]
+(defn todo [{{:keys [chat]} :message  :as _event}]
   (tbot/send-message mybot (:id chat) "პოკა ნე უმეიუ"  #_send-msg-opts-)
   {:status 200 :body "all ok"})
 
@@ -31,20 +31,22 @@ Use `/show` for getting current substitutions.")
 
 (defn status [state])
 
-(defmethod ig/init-key :handler/show [_ {:keys [tbot]}]
+(defmethod ig/init-key :handler/show [_ {:keys [tbot db tg-send-message]}]
   (fn show [{msg :message :as _event}]
     (log/debug "in show handler  " _event)
     (try
       (let [chat-id              (-> msg :chat :id)
-            {mappings :mappings} (wcar* (car/get chat-id))]
-        (tbot/send-message tbot chat-id (str "current mapping: " mappings) #_send-msg-opts-))
+            {mappings :mappings} (redis/get-mappings db chat-id)
+            ;; (wcar* (car/get chat-id))
+            ]
+        (tg-send-message tbot chat-id (str "current mapping: " mappings) #_send-msg-opts-))
       (catch Exception e
         (log/error "error on add: " e)))  ;; rethrow ex-info, do logging only once
     {:status 200 :body "all ok"}))
 
 ;; TODO: only admins should be able to change the mappings
 ;; TODO: handle bad input (odd number of elements)
-(defmethod ig/init-key :handler/set [_ {:keys [tbot]}]
+(defmethod ig/init-key :handler/set [_ {:keys [tbot tg-send-message]}]
   (fn set [{msg :message :as _event}]
     (try
       (let [chat-id  (-> msg :chat :id)
@@ -52,7 +54,7 @@ Use `/show` for getting current substitutions.")
             pattern  (->> tmp (take-nth 2) (str/join "|"))
             mappings (apply hash-map tmp)]
         (wcar* (car/set chat-id {:mappings mappings :pattern pattern}))
-        (tbot/send-message mybot chat-id (str "new mappings has been set: " mappings) #_send-msg-opts-))
+        (tg-send-message mybot chat-id (str "new mappings has been set: " mappings) #_send-msg-opts-))
       (catch Exception e
         (log/error "error on set: " e)))
     {:status 200 :body "all ok"}))

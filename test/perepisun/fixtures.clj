@@ -60,7 +60,7 @@
      :id         146480146,
      :last_name  "Makarov"}}})
 
-(def bot-commands
+(def command-show
   {:update_id 555827594,
    :message
    {:date       1649552048,
@@ -78,7 +78,6 @@
      :id         146480146,
      :last_name  "Makarov"},
     :text       "/show@rewraktar_dev_bot"}})
-
 
 (def new-member
   {:update_id 835717283,

@@ -52,7 +52,6 @@
    (ring/create-default-handler)))
 
 (defn start-server [{config :config :as system}]
-  ;; (log/info "config: " config)
   (let [port   (-> config :webserver :port)
         server (run-jetty (make-app system) {:port port :join? false})]
     (try
@@ -67,8 +66,3 @@
 
 (defmethod ig/halt-key! :webserver [_ server]
   (.stop server))
-
-(defn -main [& _args]
-  (taoensso.timbre.tools.logging/use-timbre)
-  ;; (log/set-level! (:log-level config))
-  (start-server nil))

@@ -1,15 +1,14 @@
 (ns perepisun.system
   (:require
    [integrant.core :as ig]
-   [telegrambot-lib.core :as tbot]
    [perepisun.config]
+   [perepisun.handlers]
+   [perepisun.handlers.rewrite]
    [perepisun.http]
    [perepisun.redis]
-   [perepisun.handlers]
-   [perepisun.handlers.rewrite]))
-
-(defmethod ig/init-key :app/tbot [_ {config :config}]
-  (tbot/create (-> config :bot-api-key)))
+   [perepisun.telegram]
+   [taoensso.timbre.tools.logging]
+   [telegrambot-lib.core :as tbot]))
 
 (def system
   {:webserver {:config (ig/ref :app/config)
@@ -22,15 +21,20 @@
 
    :app/redis {:config (ig/ref :app/config)}
 
-   :handler/help {:tbot (ig/ref :app/tbot)}
+   :app/tbot {:config (ig/ref :app/config)}
+
+   :handler/help {:tbot (ig/ref :app/tbot)
+                  :tg-send-message tbot/send-message}
 
    :handler/rewrite {:tbot (ig/ref :app/tbot)
+                     :tg-send-message tbot/send-message
+                     :tg-delete-message tbot/delete-message
                      :db (ig/ref :app/redis)}
 
    :handler/show {:tbot (ig/ref :app/tbot)
+                  :tg-send-message tbot/send-message
                   :db (ig/ref :app/redis)}
 
    :handler/set {:tbot (ig/ref :app/tbot)
-                 :db (ig/ref :app/redis)}
-
-   :app/tbot {:config (ig/ref :app/config)}})
+                 :tg-send-message tbot/send-message
+                 :db (ig/ref :app/redis)}})
