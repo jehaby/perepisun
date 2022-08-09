@@ -2,4 +2,4 @@ export BOT_API_KEY="..."
 export HTTP_PORT=8859
 export WEBHOOK_CALLBACK_URI="http://localhost:8859/api/webhook"
 export REDIS_PASSWORD=dev
-export LOG_LEVEL=:debug
+export TIMBRE_LEVEL=:debug
