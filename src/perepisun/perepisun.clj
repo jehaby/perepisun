@@ -9,4 +9,4 @@
 (defn -main [& _args]
   (taoensso.timbre.tools.logging/use-timbre)
   (let [{config :app/config} (ig/init system)]
-    (log/set-level! (:log-level config))))
+    (log/merge-config! (:log config))))

@@ -1,4 +1,5 @@
-((nil . ((cider-clojure-cli-global-options . "-A:dev:test:cider -J-XX:-OmitStackTraceInFastThrow")
+((nil . ((cider-clojure-cli-global-options . "-A:dev:test:cider:performance/benchmark -J-XX:-OmitStackTraceInFastThrow")
          (cider-preferred-build-tool       . clojure-cli)
-         ;; (cider-clojure-cli-global-options "-J-XX:-OmitStackTraceInFastThrow")
+         (cider-ns-refresh-before-fn . "reloaded.repl/suspend")
+         (cider-ns-refresh-after-fn  . "reloaded.repl/resume")
          )))

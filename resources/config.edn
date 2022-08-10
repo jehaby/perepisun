@@ -1,6 +1,7 @@
 {:bot-api-key #env BOT_API_KEY
 
- :log-level   #keyword #or [#env LOG_LEVEL "info"]
+ :log  {:min-level #keyword #or [#env LOG_LEVEL "info"]
+        :ns-filter {:deny #{"org.eclipse.jetty.*"}}}
  :redis       {:spec
                {:uri #or [#env REDIS_URI "redis://localhost:6379/"]}}
  :webserver   {:port #long #or [#env HTTP_PORT 8859]}}

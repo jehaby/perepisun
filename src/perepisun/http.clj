@@ -9,7 +9,6 @@
    [ring.adapter.jetty9 :refer [run-jetty]]
    [ring.middleware.params :as params]
    [taoensso.timbre :as log]
-   [taoensso.timbre.tools.logging]
    [perepisun.handlers :as h]))
 
 (defn make-handler [{rewrite-hnd :handler/rewrite
