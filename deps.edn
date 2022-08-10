@@ -38,5 +38,5 @@
             :exec-fn      hf.depstar/uberjar
             :exec-args    {:aot        true
                            :jar        "rewraktar.jar"
-                           :main-class "perepisun.http"
+                           :main-class "perepisun.perepisun"
                            :sync-pom   true}}}}

@@ -1,12 +1,12 @@
 .PHONY: \
-	build \
+	uberjar \
 	deploy \
 	upload \
 	test \
 	setup-dev-webhook
 
-build:
-	clojure -X:uberjar
+uberjar:
+	TAOENSSO_TIMBRE_MIN_LEVEL_EDN=:warn clojure -X:uberjar
 
 upload:
 	scp rewraktar.jar vps1:rewraktar/
@@ -14,7 +14,7 @@ upload:
 restart:
 	ssh vps1 'systemctl restart rewraktar'
 
-deploy: build upload restart
+deploy: uberjar upload restart
 
 test:
 	TIMBRE_LEVEL=:warn neil test

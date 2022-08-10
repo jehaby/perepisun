@@ -28,7 +28,67 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.10.3</version>
+      <version>1.11.1</version>
+    </dependency>
+    <dependency>
+      <groupId>telegrambot-lib</groupId>
+      <artifactId>telegrambot-lib</artifactId>
+      <version>1.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>metosin</groupId>
+      <artifactId>muuntaja</artifactId>
+      <version>0.6.8</version>
+    </dependency>
+    <dependency>
+      <groupId>com.taoensso</groupId>
+      <artifactId>carmine</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>aero</groupId>
+      <artifactId>aero</artifactId>
+      <version>1.1.6</version>
+    </dependency>
+    <dependency>
+      <groupId>clj-http</groupId>
+      <artifactId>clj-http</artifactId>
+      <version>3.12.3</version>
+    </dependency>
+    <dependency>
+      <groupId>integrant</groupId>
+      <artifactId>integrant</artifactId>
+      <version>0.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fzakaria</groupId>
+      <artifactId>slf4j-timbre</artifactId>
+      <version>0.3.21</version>
+    </dependency>
+    <dependency>
+      <groupId>com.taoensso</groupId>
+      <artifactId>timbre</artifactId>
+      <version>5.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>info.sunng</groupId>
+      <artifactId>ring-jetty9-adapter</artifactId>
+      <version>0.17.5</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.36</version>
+    </dependency>
+    <dependency>
+      <groupId>metosin</groupId>
+      <artifactId>jsonista</artifactId>
+      <version>0.3.5</version>
+    </dependency>
+    <dependency>
+      <groupId>metosin</groupId>
+      <artifactId>reitit</artifactId>
+      <version>0.5.17</version>
     </dependency>
   </dependencies>
   <build>
@@ -38,10 +98,6 @@
     <repository>
       <id>clojars</id>
       <url>https://repo.clojars.org/</url>
-    </repository>
-    <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
     </repository>
   </repositories>
   <distributionManagement>
