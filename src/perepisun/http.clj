@@ -11,7 +11,7 @@
    [taoensso.timbre :as log]
    [perepisun.handlers :as h]))
 
-(defn make-handler [{rewrite-hnd :handler/rewrite
+(defn tg-webhook-handler [{rewrite-hnd :handler/rewrite
                      help-hnd :handler/help
                      show-hnd :handler/show
                      set-hnd :handler/set
@@ -36,12 +36,12 @@
         {:status 200 :body (str "got error" e)}))
     {:status 200 :body "all ok"}))
 
-(defn make-app [system]
+(defn ring-handler [system]
   (ring/ring-handler
    (ring/router
     ["/api"
      ["/:token"
-      {:post (make-handler system)}]]
+      {:post (tg-webhook-handler system)}]]
     {:data {:muuntaja   m/instance
             :middleware [params/wrap-params
                          muuntaja/format-middleware
@@ -52,7 +52,7 @@
 
 (defn start-server [{config :config :as system}]
   (let [port   (-> config :webserver :port)
-        server (run-jetty (make-app system) {:port port :join? false})]
+        server (run-jetty (ring-handler system) {:port port :join? false})]
     (try
       (.start server)
       (catch Exception e
