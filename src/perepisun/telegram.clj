@@ -5,3 +5,5 @@
 
 (defmethod ig/init-key :app/tbot [_ {config :config}]
   (tbot/create (-> config :bot-api-key)))
+
+(defn chat-id [msg] (-> msg :chat :id))

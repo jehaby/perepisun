@@ -5,7 +5,9 @@
    [taoensso.timbre :as log]
    [taoensso.carmine :as car]
    [telegrambot-lib.core :as tbot]
-   [perepisun.redis :refer [wcar*] :as redis]))
+   [perepisun.redis :refer [wcar*] :as redis]
+   [perepisun.telegram :as tg]
+   [perepisun.redis :as db]))
 
 (def mybot nil)
 
@@ -15,27 +17,26 @@
 Use `/show` for getting current substitutions.")
 
 (defmethod ig/init-key :handler/help [_ {:keys [tbot tg-send-message]}]
-  (fn help [msg]
-    (let [chat-id (-> msg :message :chat :id)]
+  (fn help [{msg :message :as _event}]
+    (let [chat-id (tg/chat-id msg)]
       (when-not chat-id
         (log/debug "help: empty chat-id " msg))
-      (tg-send-message tbot chat-id help-msg #_send-msg-opts-))))
+      (tg-send-message tbot chat-id help-msg))))
 
 (defn todo [{{:keys [chat]} :message  :as _event}]
-  (tbot/send-message mybot (:id chat) "პოკა ნე უმეიუ"  #_send-msg-opts-)
+  (tbot/send-message mybot (:id chat) "პოკა ნე უმეიუ")
   {:status 200 :body "all ok"})
 
-(defn start [state])
-
-(defn stop [state])
-
-(defn status [state])
+(defn status [{{:keys [chat]} :message  :as _event}])
 
 (defmethod ig/init-key :handler/show [_ {:keys [tbot db tg-send-message]}]
   (fn show [{msg :message :as _event}]
+    (def db db)
+    (def tbot tbot)
+    (def msg msg)
     (log/debug "in show handler  " _event)
     (try
-      (let [chat-id              (-> msg :chat :id)
+      (let [chat-id              (tg/chat-id msg)
             {mappings :mappings} (redis/get-mappings db chat-id)]
         (tg-send-message tbot chat-id (str "current mapping: " mappings)))
       (catch Exception e
@@ -43,14 +44,14 @@ Use `/show` for getting current substitutions.")
     {:status 200 :body "all ok"}))
 
 ;; TODO: only admins should be able to change the mappings
-(defmethod ig/init-key :handler/set [_ {:keys [tbot tg-send-message]}]
+(defmethod ig/init-key :handler/set [_ {:keys [tbot db tg-send-message]}]
   (fn set [{msg :message :as _event}]
-    (let [chat-id  (-> msg :chat :id)
-          tmp      (-> msg :text (str/split #"\s+") rest)]
+    (let [chat-id  (tg/chat-id msg)
+          mappings-seq      (-> msg :text (str/split #"\s+") rest)]
       (try
-        (let [mappings (apply hash-map tmp)
-              pattern  (->> tmp (take-nth 2) (str/join "|"))]
-          (wcar* (car/set chat-id {:mappings mappings :pattern pattern}))
+        (let [mappings (apply hash-map mappings-seq)
+              pattern  (->> mappings-seq (take-nth 2) (str/join "|"))]
+          (redis/set-mappings db chat-id mappings pattern)
           (tg-send-message tbot chat-id (str "New mappings has been set: " mappings)))
         (catch java.lang.IllegalArgumentException e
           (let [msg (ex-message e)]
@@ -59,4 +60,30 @@ Use `/show` for getting current substitutions.")
               (throw e))))
         (catch Exception e
           (log/error "error on set: " e))))
+    {:status 200 :body "all ok"}))
+
+(defmethod ig/init-key :handler/start [_ {:keys [tbot db tg-send-message]}]
+  (fn show [{msg :message :as _event}]
+    (log/debug "in start handler  " _event)
+    (try
+      (let [chat-id (tg/chat-id msg)
+            {mappings :mappings} (redis/get-mappings db chat-id)]
+        (redis/start db chat-id)
+        (let [text (if (seq mappings)
+                     (format "Started. Current mappings: %s" mappings)
+                     "You need to set some mappings (use /set command).")]
+          (tg-send-message tbot chat-id text)))
+      (catch Exception e
+        (log/error "error on add: " e)))  ;; TODO: rethrow ex-info, do logging only once
+    {:status 200 :body "all ok"}))
+
+(defmethod ig/init-key :handler/stop [_ {:keys [tbot db tg-send-message]}]
+  (fn show [{msg :message :as _event}]
+    (log/debug "in stop handler  " _event)
+    (try
+      (let [chat-id (tg/chat-id msg)]
+        (redis/stop db chat-id)
+        (tg-send-message tbot chat-id "Stopped."))
+      (catch Exception e
+        (log/error "error on add: " e)))
     {:status 200 :body "all ok"}))

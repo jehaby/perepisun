@@ -15,10 +15,12 @@
   (let [conn-opts (:redis config)]
     (reify DB
       (get-mappings [_ chat-id]
-        (car/wcar conn-opts (car/get chat-id)))
+        (car/wcar conn-opts (car/parse-map (car/hgetall chat-id) :keywordize)))
       (set-mappings [_ chat-id mappings pattern]
         (car/wcar
           conn-opts
-          (car/set conn-opts chat-id {:mappings mappings :pattern pattern})))
-      (stop [_ chat-id])
-      (start [_ chat-id]))))
+          (car/hset chat-id :mappings mappings :pattern pattern)))
+      (stop [_ chat-id]
+        (car/wcar conn-opts (car/hset chat-id :stopped? true)))
+      (start [_ chat-id]
+        (car/wcar conn-opts (car/hdel chat-id :stopped?))))))

@@ -15,7 +15,9 @@
                :handler/rewrite (ig/ref :handler/rewrite)
                :handler/help (ig/ref :handler/help)
                :handler/show (ig/ref :handler/show)
-               :handler/set (ig/ref :handler/set)}
+               :handler/set (ig/ref :handler/set)
+               :handler/start (ig/ref :handler/start)
+               :handler/stop (ig/ref :handler/stop)}
 
    :app/config {}
 
@@ -37,4 +39,12 @@
 
    :handler/set {:tbot (ig/ref :app/tbot)
                  :tg-send-message tbot/send-message
-                 :db (ig/ref :app/redis)}})
+                 :db (ig/ref :app/redis)}
+
+   :handler/start {:tbot (ig/ref :app/tbot)
+                   :tg-send-message tbot/send-message
+                   :db (ig/ref :app/redis)}
+
+   :handler/stop {:tbot (ig/ref :app/tbot)
+                  :tg-send-message tbot/send-message
+                  :db (ig/ref :app/redis)}})

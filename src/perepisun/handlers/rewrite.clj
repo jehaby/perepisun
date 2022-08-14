@@ -17,16 +17,17 @@
     (str "`" (str first_name " " last_name) "` => " text)))
 
 (defmethod ig/init-key :handler/rewrite [_ {:keys [tbot db tg-send-message tg-delete-message]}]
-  (fn rewrite-handler [{{:keys [chat message_id from text] :as message} :message :as event}]
+  (fn rewrite-handler [{{:keys [chat message_id from text] :as message} :message :as _event}]
     (when (and text (:id chat) message_id from)
       (try
-        (let [chat-id  (:id chat)
-              {:keys [mappings pattern]} (db/get-mappings db (:id chat))
-              new-text (respond text mappings pattern)]
-          (when (not= new-text text)
-            (tg-delete-message tbot chat-id message_id) ;; TODO: check and handler response
-            (let [msg  (add-author from new-text)
-                  resp (tg-send-message tbot chat-id msg  #_send-msg-opts-)]
-              (log/debug "telegram api resp: " resp))))
+        (let [chat-id (:id chat)
+              {:keys [mappings pattern stopped?]} (db/get-mappings db (:id chat))]
+          (when-not stopped?
+            (let [new-text (respond text mappings pattern)]
+              (when (not= new-text text)
+                (tg-delete-message tbot chat-id message_id) ;; TODO: check and handler response
+                (let [msg  (add-author from new-text)
+                      resp (tg-send-message tbot chat-id msg  #_send-msg-opts-)]
+                  (log/debug "telegram api resp: " resp))))))
         (catch Exception e
           (throw (ex-info "Excpetion in rewrite-handler" {:message message} e)))))))

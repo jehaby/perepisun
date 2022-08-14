@@ -11,26 +11,25 @@
    [taoensso.timbre :as log]
    [perepisun.handlers :as h]))
 
-(defn tg-webhook-handler [{rewrite-hnd :handler/rewrite
-                     help-hnd :handler/help
-                     show-hnd :handler/show
-                     set-hnd :handler/set
-                     :as _system}]
+(defn tg-webhook-handler [{:handler/keys [start stop help rewrite set show]
+                           :as _system}]
   (fn [{event :body-params :as _req}]
     (log/debug "got event " event)
+    ;; (def system system)
+    ;; (def event event)
+    ;; (def _req _req)
     (try
       (when-let [text (-> event :message :text)]
-        ;; check that event is a message
-        (condp #(str/starts-with? %2 %1) text ;; [1]
-          "/help"   (help-hnd event)
-          "/start"  (h/todo event) #_(log/debug "got start " event)
-          "/stop"   (h/todo event) #_(log/debug "got stop " event)
-          "/status" (h/todo event) #_(h/status event)
-          "/show"   (show-hnd event)
-          "/set"    (set-hnd event)
-          "/delete" (h/todo event)
-          ;; nil       {:status 200}  #_ (h/delete event)
-          (rewrite-hnd event))) ;; TODO: check this case, is it the source of errors?
+        (let [handler (condp #(str/starts-with? %2 %1) text ;; [1]
+                        "/help"   help
+                        "/start"  start
+                        "/stop"   stop
+                        "/status" h/todo
+                        "/show"   show
+                        "/set"    set
+                        "/delete" h/todo
+                        rewrite)]
+          (handler event)))
       (catch Exception e
         (log/error {:msg "excpetion in handler" :err e :event event})
         {:status 200 :body (str "got error" e)}))
