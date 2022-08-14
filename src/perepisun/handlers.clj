@@ -36,25 +36,27 @@ Use `/show` for getting current substitutions.")
     (log/debug "in show handler  " _event)
     (try
       (let [chat-id              (-> msg :chat :id)
-            {mappings :mappings} (redis/get-mappings db chat-id)
-            ;; (wcar* (car/get chat-id))
-            ]
-        (tg-send-message tbot chat-id (str "current mapping: " mappings) #_send-msg-opts-))
+            {mappings :mappings} (redis/get-mappings db chat-id)]
+        (tg-send-message tbot chat-id (str "current mapping: " mappings)))
       (catch Exception e
-        (log/error "error on add: " e)))  ;; rethrow ex-info, do logging only once
+        (log/error "error on add: " e)))  ;; TODO: rethrow ex-info, do logging only once
     {:status 200 :body "all ok"}))
 
 ;; TODO: only admins should be able to change the mappings
-;; TODO: handle bad input (odd number of elements)
 (defmethod ig/init-key :handler/set [_ {:keys [tbot tg-send-message]}]
   (fn set [{msg :message :as _event}]
-    (try
-      (let [chat-id  (-> msg :chat :id)
-            tmp      (-> msg :text (str/split #"\s+") rest)
-            pattern  (->> tmp (take-nth 2) (str/join "|"))
-            mappings (apply hash-map tmp)]
-        (wcar* (car/set chat-id {:mappings mappings :pattern pattern}))
-        (tg-send-message mybot chat-id (str "new mappings has been set: " mappings) #_send-msg-opts-))
-      (catch Exception e
-        (log/error "error on set: " e)))
+    (let [chat-id  (-> msg :chat :id)
+          tmp      (-> msg :text (str/split #"\s+") rest)]
+      (try
+        (let [mappings (apply hash-map tmp)
+              pattern  (->> tmp (take-nth 2) (str/join "|"))]
+          (wcar* (car/set chat-id {:mappings mappings :pattern pattern}))
+          (tg-send-message tbot chat-id (str "New mappings has been set: " mappings)))
+        (catch java.lang.IllegalArgumentException e
+          (let [msg (ex-message e)]
+            (if (str/starts-with? msg "No value supplied for key")
+              (tg-send-message tbot chat-id (format "Mappings must have even number of elements (%s)" msg))
+              (throw e))))
+        (catch Exception e
+          (log/error "error on set: " e))))
     {:status 200 :body "all ok"}))
