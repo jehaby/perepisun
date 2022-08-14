@@ -22,7 +22,7 @@
 
   clj-http/clj-http {:mvn/version "3.12.3"} ;; client
 
-  telegrambot-lib/telegrambot-lib {:mvn/version "1.4.0"}}
+  telegrambot-lib/telegrambot-lib {:mvn/version "2.1.0"}}
  :aliases
  {:run-m   {:main-opts ["-m" "perepisun.perepisun"]}
   :dev     {:extra-paths ["dev"]
