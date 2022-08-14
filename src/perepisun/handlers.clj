@@ -2,12 +2,10 @@
   (:require
    [clojure.string :as str]
    [integrant.core :as ig]
-   [taoensso.timbre :as log]
-   [taoensso.carmine :as car]
-   [telegrambot-lib.core :as tbot]
-   [perepisun.redis :refer [wcar*] :as redis]
+   [perepisun.redis :as redis]
    [perepisun.telegram :as tg]
-   [perepisun.redis :as db]))
+   [taoensso.timbre :as log]
+   [telegrambot-lib.core :as tbot]))
 
 (def mybot nil)
 
@@ -31,9 +29,9 @@ Use `/show` for getting current substitutions.")
 
 (defmethod ig/init-key :handler/show [_ {:keys [tbot db tg-send-message]}]
   (fn show [{msg :message :as _event}]
-    (def db db)
-    (def tbot tbot)
-    (def msg msg)
+    ;; (def db db)
+    ;; (def tbot tbot)
+    ;; (def msg msg)
     (log/debug "in show handler  " _event)
     (try
       (let [chat-id              (tg/chat-id msg)
@@ -63,7 +61,7 @@ Use `/show` for getting current substitutions.")
     {:status 200 :body "all ok"}))
 
 (defmethod ig/init-key :handler/start [_ {:keys [tbot db tg-send-message]}]
-  (fn show [{msg :message :as _event}]
+  (fn start [{msg :message :as _event}]
     (log/debug "in start handler  " _event)
     (try
       (let [chat-id (tg/chat-id msg)
@@ -78,7 +76,7 @@ Use `/show` for getting current substitutions.")
     {:status 200 :body "all ok"}))
 
 (defmethod ig/init-key :handler/stop [_ {:keys [tbot db tg-send-message]}]
-  (fn show [{msg :message :as _event}]
+  (fn stop [{msg :message :as _event}]
     (log/debug "in stop handler  " _event)
     (try
       (let [chat-id (tg/chat-id msg)]
@@ -87,3 +85,26 @@ Use `/show` for getting current substitutions.")
       (catch Exception e
         (log/error "error on add: " e)))
     {:status 200 :body "all ok"}))
+
+(defmethod ig/init-key :handler/status [_ {:keys [tbot db tg-send-message]}]
+  (fn status [{msg :message :as _event}]
+    (log/debug "in status handler  " _event)
+    (try
+      (let [chat-id (tg/chat-id msg)
+            {:keys [mappings stopped?]} (redis/get-mappings db chat-id)
+            text (format "Bot is%s running. \nCurrent mappings: %s. "
+                         (if stopped? " not" "")
+                         mappings)]
+        (tg-send-message tbot chat-id text))
+      (catch Exception e
+        (log/error "error in status: " e)))
+    {:status 200 :body "all ok"}))
+
+(def about-msg "For any questions, suggestions or bug-reports contact @jehaby.");
+
+(defmethod ig/init-key :handler/about [_ {:keys [tbot tg-send-message]}]
+  (fn about [{msg :message :as _event}]
+    (let [chat-id (tg/chat-id msg)]
+      (when-not chat-id
+        (log/debug "about: empty chat-id " msg))
+      (tg-send-message tbot chat-id about-msg))))

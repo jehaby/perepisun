@@ -12,11 +12,13 @@
 
 (def system
   {:webserver {:config (ig/ref :app/config)
-               :handler/rewrite (ig/ref :handler/rewrite)
+               :handler/about (ig/ref :handler/about)
                :handler/help (ig/ref :handler/help)
-               :handler/show (ig/ref :handler/show)
+               :handler/rewrite (ig/ref :handler/rewrite)
                :handler/set (ig/ref :handler/set)
+               :handler/show (ig/ref :handler/show)
                :handler/start (ig/ref :handler/start)
+               :handler/status (ig/ref :handler/status)
                :handler/stop (ig/ref :handler/stop)}
 
    :app/config {}
@@ -47,4 +49,11 @@
 
    :handler/stop {:tbot (ig/ref :app/tbot)
                   :tg-send-message tbot/send-message
-                  :db (ig/ref :app/redis)}})
+                  :db (ig/ref :app/redis)}
+
+   :handler/status {:tbot (ig/ref :app/tbot)
+                    :tg-send-message tbot/send-message
+                    :db (ig/ref :app/redis)}
+
+   :handler/about {:tbot (ig/ref :app/tbot)
+                    :tg-send-message tbot/send-message}})

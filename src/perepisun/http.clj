@@ -11,7 +11,14 @@
    [taoensso.timbre :as log]
    [perepisun.handlers :as h]))
 
-(defn tg-webhook-handler [{:handler/keys [start stop help rewrite set show]
+(defn tg-webhook-handler [{:handler/keys [about
+                                          help
+                                          rewrite
+                                          set
+                                          show
+                                          start
+                                          status
+                                          stop]
                            :as _system}]
   (fn [{event :body-params :as _req}]
     (log/debug "got event " event)
@@ -21,13 +28,14 @@
     (try
       (when-let [text (-> event :message :text)]
         (let [handler (condp #(str/starts-with? %2 %1) text ;; [1]
-                        "/help"   help
-                        "/start"  start
-                        "/stop"   stop
-                        "/status" h/todo
-                        "/show"   show
-                        "/set"    set
+                        "/about"  about
                         "/delete" h/todo
+                        "/help"   help
+                        "/set"    set
+                        "/show"   show
+                        "/start"  start
+                        "/status" status
+                        "/stop"   stop
                         rewrite)]
           (handler event)))
       (catch Exception e
