@@ -69,7 +69,7 @@ Use `/show` for getting current substitutions.")
         (redis/start db chat-id)
         (let [text (if (seq mappings)
                      (format "Started. Current mappings: %s" mappings)
-                     "You need to set some mappings (use /set command).")]
+                     "You need to set some mappings (use /set command). For example `/set а ა у უ и ი`")]
           (tg-send-message tbot chat-id text)))
       (catch Exception e
         (log/error "error on add: " e)))  ;; TODO: rethrow ex-info, do logging only once
