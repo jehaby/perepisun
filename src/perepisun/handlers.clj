@@ -100,7 +100,9 @@ Use `/show` for getting current substitutions.")
         (log/error "error in status: " e)))
     {:status 200 :body "all ok"}))
 
-(def about-msg "For any questions, suggestions or bug-reports contact @jehaby.");
+(def about-msg
+"For any questions, suggestions or bug-reports contact @jehaby.
+source: https://github.com/jehaby/perepisun")
 
 (defmethod ig/init-key :handler/about [_ {:keys [tbot tg-send-message]}]
   (fn about [{msg :message :as _event}]
